@@ -1,1 +1,4 @@
-# TODO: show how to load initial pipelines into the ConfigMap
+To let Hayhooks serve pipelines at startup run:
+
+kubectl create configmap {{ .Release.Name }}-default-pipelines --from-file=your/pipelines/dir -o yaml --dry-run=client | kubectl replace -f -
+kubectl rollout restart deployment {{ .Release.Name }}-haystack-deployment
