@@ -21,6 +21,9 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- if .Values.runtimeClassName }}
+      runtimeClassName: {{ .Values.runtimeClassName }}
+      {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -46,6 +49,9 @@ spec:
               value: {{ .Values.pipelinesDirMount }}
             - name: HAYHOOKS_ROOT_PATH
               value: /haystack
+            {{- with .Values.envVariables }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           volumeMounts:
             - name: config-volume
               mountPath: {{ .Values.pipelinesDirMount }}
