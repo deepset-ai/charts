@@ -19,6 +19,8 @@ fullnameOverride: ""
 
 podAnnotations: {}
 podLabels: {}
+runtimeClassName: ""
+envVariables: {}
 
 podSecurityContext: {}
   # fsGroup: 2000
