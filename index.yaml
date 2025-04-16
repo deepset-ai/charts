@@ -3,6 +3,16 @@ entries:
   hayhooks:
   - apiVersion: v2
     appVersion: 2.12.1
+    created: "2025-04-16T11:35:59.291273165Z"
+    description: A Helm chart for hayhooks
+    digest: 60432ac89ebcd394bbb29735334e893dc4972dab123b44439751b9616cfda2f4
+    name: hayhooks
+    type: application
+    urls:
+    - https://github.com/deepset-ai/charts/releases/download/hayhooks-0.4.0/hayhooks-0.4.0.tgz
+    version: 0.4.0
+  - apiVersion: v2
+    appVersion: 2.12.1
     created: "2025-04-16T07:37:48.418319281Z"
     description: A Helm chart for Kubernetes
     digest: ce64499a631083a01c1a8bdd41bb0350eda8cee10b1fac0efa547b5ec0dda6f3
@@ -51,4 +61,4 @@ entries:
     urls:
     - https://github.com/deepset-ai/charts/releases/download/hayhooks-0.1.0/hayhooks-0.1.0.tgz
     version: 0.1.0
-generated: "2025-04-16T07:37:48.418343547Z"
+generated: "2025-04-16T11:35:59.291301147Z"
