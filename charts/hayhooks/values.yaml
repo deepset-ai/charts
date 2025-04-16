@@ -4,13 +4,20 @@
 
 replicaCount: 1
 
+hayhooks:
+  # Base path under which the Hayhooks service is served.
+  # This is used to correctly resolve API endpoints when behind an Ingress.
+  # Example: if you want to serve Hayhooks at http://<host>/haystack, set rootPath to "/haystack"
+  rootPath: ""
+
 image:
   repository: deepset/hayhooks
-  # Since we default to the moving tag `main`, we have to always pull
-  # to be sure we're getting the latest.
-  pullPolicy: Always
-  # Overrides the default image tag `main`
-  tag: "main"
+  # Default pull policy. Recommended: "IfNotPresent" for specific version tags,
+  # "Always" if using "main" or other frequently updated tags.
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the latest stable Helm Chart version.
+  # Specify "main" and pullPolicy: Always to track the latest development version.
+  tag: "v0.6.0"
 
 pipelinesDirMount: "/opt/pipelines"
 
@@ -21,6 +28,18 @@ podAnnotations: {}
 podLabels: {}
 runtimeClassName: ""
 envVariables: {}
+
+# Allows defining additional environment variables, including those using valueFrom (e.g., secrets)
+# Example:
+# extraEnvVars:
+#   - name: MY_VARIABLE
+#     value: "my_value"
+#   - name: OPENAI_API_KEY
+#     valueFrom:
+#       secretKeyRef:
+#         name: openai-secret
+#         key: api-key
+extraEnvVars: []
 
 podSecurityContext: {}
   # fsGroup: 2000
@@ -38,15 +57,15 @@ service:
 
 ingress:
   enabled: true
-  className: ""
+  className: "nginx"
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: localhost
       paths:
-        - path: /haystack(/|$)(.*)
+        - path: /(.*)
           pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
@@ -87,12 +106,18 @@ volumes: []
 #   secret:
 #     secretName: mysecret
 #     optional: false
+# - name: local-data # Example hostPath Volume
+#   hostPath:
+#     path: /data # path on the host
+#     type: Directory # or DirectoryOrCreate
 
 # Additional volumeMounts on the output Deployment definition.
-volumeMounts: []
 # - name: foo
 #   mountPath: "/etc/foo"
 #   readOnly: true
+# - name: local-data # Example hostPath mount
+#   mountPath: /mnt/data # path in the container
+volumeMounts: []
 
 nodeSelector: {}
 

@@ -13,4 +13,4 @@ $ helm repo add deepset https://deepset-ai.github.io/charts/
 
 | Name     |                    Install                    |  Docs |
 | -------- | :-------------------------------------------: | ----: |
-| Hayhooks | `helm install your-app-name deepset/hayhooks` | FIXME |
+| Hayhooks | `helm install your-app-name deepset/hayhooks` | [Link](./charts/hayhooks/README.md) |

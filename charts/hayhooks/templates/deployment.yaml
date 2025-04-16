@@ -48,20 +48,23 @@ spec:
             - name: HAYHOOKS_PIPELINES_DIR
               value: {{ .Values.pipelinesDirMount }}
             - name: HAYHOOKS_ROOT_PATH
-              value: /haystack
+              value: {{ .Values.hayhooks.rootPath | quote }}
             {{- with .Values.envVariables }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+            {{- range .Values.extraEnvVars }}
+            - name: {{ .name }}
+              {{- if .value }}
+              value: {{ .value | quote }}
+              {{- else if .valueFrom }}
+              valueFrom: {{- toYaml .valueFrom | nindent 16 }}
+              {{- end }}
+            {{- end }}
           volumeMounts:
-            - name: config-volume
-              mountPath: {{ .Values.pipelinesDirMount }}
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
       volumes:
-        - name: config-volume
-          configMap:
-            name: {{ .Release.Name }}-default-pipelines
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

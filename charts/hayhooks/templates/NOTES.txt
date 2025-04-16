@@ -1,4 +1,43 @@
-To let Hayhooks serve pipelines at startup run:
+{{- define "hayhooks.notes" -}}
+Your Hayhooks deployment `{{ .Release.Name }}` is ready.
 
-kubectl create configmap {{ .Release.Name }}-default-pipelines --from-file=your/pipelines/dir -o yaml --dry-run=client | kubectl replace -f -
-kubectl rollout restart deployment {{ .Release.Name }}-haystack-deployment
+1. **Accessing the Service:**
+{{- if .Values.ingress.enabled }}
+  To access Hayhooks, ensure your Ingress controller is set up and DNS is configured for:
+  {{- range .Values.ingress.hosts }}
+    http://{{ .host }}{{ (first .paths).path | replace "(.*)" "" | replace "(/|$)(.*)" "" }}
+  {{- end }}
+  The exact path depends on your `ingress.hosts.paths.path` and `hayhooks.rootPath` configuration in values.yaml.
+  By default, it's served at the root path (`/`).
+{{- else }}
+  Get the application URL by running these commands:
+  {{- if contains "NodePort" .Values.service.type }}
+    export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "hayhooks.fullname" . }})
+    export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+    echo http://$NODE_IP:$NODE_PORT{{ .Values.hayhooks.rootPath }}
+  {{- else if contains "LoadBalancer" .Values.service.type }}
+    NOTE: It might take a few minutes for the LoadBalancer IP to be available.
+    You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "hayhooks.fullname" . }}'
+    export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "hayhooks.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+    echo http://$SERVICE_IP:{{ .Values.service.port }}{{ .Values.hayhooks.rootPath }}
+  {{- else if contains "ClusterIP" .Values.service.type }}
+    export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "hayhooks.name" . }},app.kubernetes.io/instance={{ .Release.Name }} -o jsonpath="{.items[0].metadata.name}")
+    echo "Visit http://127.0.0.1:8080{{ .Values.hayhooks.rootPath }} to use your application"
+    kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:{{ .Values.service.port }}
+  {{- end }}
+{{- end }}
+
+2. **Loading Pipelines:**
+   Remember to mount the **directories** containing your pipeline wrappers (`pipeline_wrapper.py` and any associated files) into the container.
+   Configure `volumes` and `volumeMounts` in your `values.yaml` to mount your pipeline wrapper directories
+   into the directory specified by `pipelinesDirMount` (default: `{{ .Values.pipelinesDirMount }}`).
+   Hayhooks will automatically scan this directory for subdirectories containing `pipeline_wrapper.py` files and load the corresponding pipelines at startup.
+   Ensure your container image includes any necessary Python dependencies required by your wrappers.
+
+3. **Configuration Consistency:**
+   Ensure that the `hayhooks.rootPath` value in your `values.yaml` matches the path configuration
+   of your Ingress (`ingress.hosts[0].paths[0].path` and annotations) if Ingress is enabled.
+   The defaults (`hayhooks.rootPath=""`, `ingress.hosts[0].paths[0].path="/(.*)"`) assume serving from the root.
+
+{{- end }}
+{{ template "hayhooks.notes" . }}
